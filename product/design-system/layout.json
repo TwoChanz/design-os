@@ -1,0 +1,7 @@
+{
+  "theme": "light-only",
+  "padding": "12-16px",
+  "layout": "card-based",
+  "breakdowns": "bars-and-numbers",
+  "avoid": ["dense-tables", "dark-mode-phase1"]
+}

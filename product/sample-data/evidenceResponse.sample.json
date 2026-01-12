@@ -1,0 +1,46 @@
+[
+  {
+    "id": "er_01HQXK9N3O4P5Q6R7S8T9U0V",
+    "scoreReportId": "sr_04HQXK6J9K0L1M2N3O4P5Q6R",
+    "submittedAt": "2026-01-09T11:22:00Z",
+    "questions": [
+      {
+        "key": "price_easy_find",
+        "text": "Was the price easy to find in under 30 seconds?",
+        "answer": "yes"
+      },
+      {
+        "key": "trial_limits_clear",
+        "text": "Were trial/free tier limits clearly explained?",
+        "answer": "no"
+      },
+      {
+        "key": "cancel_steps_clear",
+        "text": "Were cancellation steps easy to find?",
+        "answer": "not_sure"
+      }
+    ]
+  },
+  {
+    "id": "er_02HQXK8M2N3O4P5Q6R7S8T9U",
+    "scoreReportId": "sr_02HQXK8L1M2N3O4P5Q6R7S8T",
+    "submittedAt": "2026-01-11T09:18:00Z",
+    "questions": [
+      {
+        "key": "price_easy_find",
+        "text": "Was the price easy to find in under 30 seconds?",
+        "answer": "yes"
+      },
+      {
+        "key": "trial_limits_clear",
+        "text": "Were trial/free tier limits clearly explained?",
+        "answer": "no"
+      },
+      {
+        "key": "cancel_steps_clear",
+        "text": "Were cancellation steps easy to find?",
+        "answer": "no"
+      }
+    ]
+  }
+]
