@@ -17,8 +17,8 @@ interface Props {
 }
 
 export function ErrorPermissionScreen({ context, send }: Props) {
-  // For demo, use a placeholder domain
-  const domain = context.currentScoreReport?.domain ?? 'example.com';
+  // Get domain from context
+  const domain = context.currentDomain ?? 'Unknown page';
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[320px] px-6 py-8">

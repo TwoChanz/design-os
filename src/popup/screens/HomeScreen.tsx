@@ -15,8 +15,8 @@ interface Props {
 }
 
 export function HomeScreen({ context, send }: Props) {
-  // For demo, use a placeholder domain - in real extension this comes from active tab
-  const domain = 'example.com';
+  // Get domain from context (set by extension when popup opens)
+  const domain = context.currentDomain ?? 'Unknown page';
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[320px] px-6 py-8">

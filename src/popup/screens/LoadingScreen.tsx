@@ -31,8 +31,8 @@ export function LoadingScreen({ context, send }: Props) {
     return () => clearInterval(interval);
   }, []);
 
-  // For demo, use a placeholder domain
-  const domain = context.currentScoreReport?.domain ?? 'example.com';
+  // Get domain from context or current score report
+  const domain = context.currentDomain ?? context.currentScoreReport?.domain ?? 'Unknown page';
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[320px] px-6 py-8">
