@@ -97,6 +97,10 @@ export interface PopupContext {
   // Navigation
   activeTab: TabId;
 
+  // Current page info (from active tab)
+  currentDomain: string | null;
+  currentUrl: string | null;
+
   // Scoring flow
   currentScoreReport: ScoreReport | null;
   evidenceResponses: EvidenceResponse[] | null;
@@ -132,6 +136,8 @@ export interface PopupContext {
 
 export const initialContext: PopupContext = {
   activeTab: 'scores',
+  currentDomain: null,
+  currentUrl: null,
   currentScoreReport: null,
   evidenceResponses: null,
   isManualScore: false,

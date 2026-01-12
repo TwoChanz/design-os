@@ -4,65 +4,93 @@
 
 import React from 'react';
 import type { PopupContext, PopupEvent, TriStateAnswer } from '../../state-machine/types';
+import { DomainPill } from '../components/DomainPill';
 import { QuestionCard } from '../components/QuestionCard';
+import { PrimaryButton } from '../components/PrimaryButton';
+import { TextLink } from '../components/TextLink';
+import { PrivacyNote } from '../components/PrivacyNote';
 
 interface Props {
   context: PopupContext;
   send: (event: PopupEvent) => void;
 }
 
-const questions = [
-  { id: 'price_clarity', question: 'Was the price easy to find?' },
-  { id: 'trial_clarity', question: 'Were trial terms clearly explained?' },
-  { id: 'cancel_clarity', question: 'Were cancellation steps clear?' },
+const QUESTIONS = [
+  { id: 'price_clarity', question: 'Was the price easy to find in under 30 seconds?' },
+  { id: 'trial_clarity', question: 'Were trial/free tier limits clearly explained?' },
+  { id: 'cancel_clarity', question: 'Were cancellation steps easy to find?' },
 ];
 
 export function EvidencePromptScreen({ context, send }: Props) {
   const responses = context.evidenceResponses ?? [];
+  const domain = context.currentDomain ?? context.currentScoreReport?.domain ?? 'Unknown page';
 
   const getAnswer = (questionId: string): TriStateAnswer | null => {
     return responses.find((r) => r.questionId === questionId)?.answer ?? null;
   };
 
-  const allAnswered = questions.every((q) => getAnswer(q.id) !== null);
+  const allAnswered = QUESTIONS.every((q) => getAnswer(q.id) !== null);
+  const answeredCount = QUESTIONS.filter((q) => getAnswer(q.id) !== null).length;
 
   return (
-    <div className="p-4 space-y-4">
-      <button
-        onClick={() => send({ type: 'BACK' })}
-        disabled={context.isSubmitting}
-        className="text-sm text-slate-500 hover:text-slate-700 disabled:opacity-50"
-      >
-        ← Back
-      </button>
+    <div className="flex flex-col min-h-[320px] px-6 py-6">
+      {/* Domain indicator */}
+      <div className="flex justify-center">
+        <DomainPill domain={domain} />
+      </div>
 
-      <div>
-        <h2 className="text-lg font-semibold text-slate-900">Help us score this page</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Answer these questions to improve the accuracy of the score.
+      {/* Header */}
+      <div className="text-center mt-5 mb-4">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+          Help improve accuracy
+        </h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          3 quick questions
         </p>
       </div>
 
-      <div className="space-y-3">
-        {questions.map((q) => (
+      {/* Questions */}
+      <div className="space-y-3 flex-1">
+        {QUESTIONS.map((q, index) => (
           <QuestionCard
             key={q.id}
+            number={index + 1}
             question={q.question}
             selectedAnswer={getAnswer(q.id)}
             onAnswer={(answer) =>
               send({ type: 'SET_ANSWER', payload: { questionId: q.id, answer } })
             }
+            disabled={context.isSubmitting}
           />
         ))}
       </div>
 
-      <button
-        onClick={() => send({ type: 'SUBMIT' })}
-        disabled={!allAnswered || context.isSubmitting}
-        className="w-full bg-blue-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        {context.isSubmitting ? 'Updating score...' : 'Update Score'}
-      </button>
+      {/* Submit button */}
+      <div className="mt-5">
+        <PrimaryButton
+          onClick={() => send({ type: 'SUBMIT' })}
+          disabled={!allAnswered || context.isSubmitting}
+          loading={context.isSubmitting}
+        >
+          {context.isSubmitting ? 'Updating score...' : `Update Score (${answeredCount}/3)`}
+        </PrimaryButton>
+      </div>
+
+      {/* Back link */}
+      <div className="mt-4 flex justify-center">
+        <TextLink
+          onClick={() => send({ type: 'BACK' })}
+          icon="arrow-left"
+          disabled={context.isSubmitting}
+        >
+          Go back without saving
+        </TextLink>
+      </div>
+
+      {/* Privacy note */}
+      <div className="mt-4">
+        <PrivacyNote text="Answers stored locally only" />
+      </div>
     </div>
   );
 }

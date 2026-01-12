@@ -4,6 +4,11 @@
 
 import React from 'react';
 import type { PopupContext, PopupEvent } from '../../state-machine/types';
+import { DomainPill } from '../components/DomainPill';
+import { IconContainer } from '../components/IconContainer';
+import { InfoCard } from '../components/InfoCard';
+import { PrimaryButton } from '../components/PrimaryButton';
+import { TextLink } from '../components/TextLink';
 
 interface Props {
   context: PopupContext;
@@ -11,42 +16,49 @@ interface Props {
 }
 
 export function ErrorCSPScreen({ context, send }: Props) {
-  return (
-    <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-        <svg
-          className="w-8 h-8 text-slate-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 15v2m0 0v2m0-2h2m-2 0H10m5-10V7a5 5 0 00-10 0v4a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2z"
-          />
-        </svg>
-      </div>
+  // Get domain from context
+  const domain = context.currentDomain ?? 'Unknown page';
 
-      <h2 className="text-lg font-semibold text-slate-900 mb-2">Page blocked</h2>
-      <p className="text-slate-500 text-sm mb-6">
-        This page restricts automated analysis. You can still score it manually.
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[320px] px-6 py-8">
+      {/* Icon */}
+      <IconContainer icon="shield-alert" color="slate" size="lg" />
+
+      {/* Headline */}
+      <h2 className="text-xl font-semibold text-slate-900 dark:text-white mt-5 mb-2 text-center">
+        Page blocked
+      </h2>
+
+      {/* Domain pill */}
+      <DomainPill domain={domain} />
+
+      {/* Explanation */}
+      <p className="text-sm text-slate-500 dark:text-slate-400 text-center mt-3 mb-5 max-w-[280px]">
+        This page's security settings prevent automatic analysis.
       </p>
 
-      <button
-        onClick={() => send({ type: 'ANSWER_MANUAL' })}
-        className="w-full bg-blue-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-      >
-        Score manually
-      </button>
+      {/* Info card */}
+      <InfoCard
+        title="What you can do:"
+        items={[
+          'Answer 3 questions to create a manual score',
+          'Try scoring from a different page on this site',
+        ]}
+      />
 
-      <button
-        onClick={() => send({ type: 'BACK' })}
-        className="mt-3 text-sm text-slate-500 hover:text-slate-700"
-      >
-        Go back
-      </button>
+      {/* Primary CTA */}
+      <div className="mt-5 w-full max-w-[280px]">
+        <PrimaryButton onClick={() => send({ type: 'ANSWER_MANUAL' })}>
+          Score manually
+        </PrimaryButton>
+      </div>
+
+      {/* Back link */}
+      <div className="mt-4">
+        <TextLink onClick={() => send({ type: 'BACK' })} icon="arrow-left">
+          Go back
+        </TextLink>
+      </div>
     </div>
   );
 }

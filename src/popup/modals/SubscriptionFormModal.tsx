@@ -5,11 +5,23 @@
 import React, { useState, useEffect } from 'react';
 import type { PopupContext, PopupEvent, SubscriptionStatus } from '../../state-machine/types';
 import { storage } from '../../storage/adapter';
+import { PrimaryButton } from '../components/PrimaryButton';
+import { SecondaryButton } from '../components/SecondaryButton';
 
 interface Props {
   context: PopupContext;
   send: (event: PopupEvent) => void;
 }
+
+const inputClasses = `
+  w-full px-3 py-2.5 rounded-xl
+  bg-white dark:bg-slate-800
+  border border-slate-300 dark:border-slate-600
+  text-slate-900 dark:text-white
+  placeholder:text-slate-400 dark:placeholder:text-slate-500
+  focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+  dark:focus:ring-blue-400 dark:focus:border-blue-400
+`;
 
 export function SubscriptionFormModal({ context, send }: Props) {
   const isEdit = context.selectedSubscriptionId !== null;
@@ -49,38 +61,48 @@ export function SubscriptionFormModal({ context, send }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 space-y-4">
-      <h3 className="text-lg font-semibold text-slate-900">
+    <form onSubmit={handleSubmit} className="p-5 space-y-4">
+      {/* Header */}
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
         {isEdit ? 'Edit Subscription' : 'Add Subscription'}
       </h3>
 
+      {/* Name field */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Name *</label>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+          Name <span className="text-rose-500">*</span>
+        </label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g., Netflix"
           required
-          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className={inputClasses}
         />
       </div>
 
+      {/* Domain field */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Domain</label>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+          Domain
+        </label>
         <input
           type="text"
           value={domain}
           onChange={(e) => setDomain(e.target.value)}
           placeholder="e.g., netflix.com"
-          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className={inputClasses}
         />
       </div>
 
+      {/* Monthly Cost field */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Monthly Cost *</label>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+          Monthly Cost <span className="text-rose-500">*</span>
+        </label>
         <div className="relative">
-          <span className="absolute left-3 top-2 text-slate-500">$</span>
+          <span className="absolute left-3 top-2.5 text-slate-500 dark:text-slate-400">$</span>
           <input
             type="number"
             step="0.01"
@@ -89,17 +111,20 @@ export function SubscriptionFormModal({ context, send }: Props) {
             onChange={(e) => setMonthlyCost(e.target.value)}
             placeholder="0.00"
             required
-            className="w-full pl-7 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className={`${inputClasses} pl-7`}
           />
         </div>
       </div>
 
+      {/* Status field */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+          Status
+        </label>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as SubscriptionStatus)}
-          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className={inputClasses}
         >
           <option value="active">Active</option>
           <option value="paused">Paused</option>
@@ -107,32 +132,32 @@ export function SubscriptionFormModal({ context, send }: Props) {
         </select>
       </div>
 
+      {/* Notes field */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+          Notes
+        </label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
           placeholder="Optional notes..."
-          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className={inputClasses}
         />
       </div>
 
-      <div className="flex gap-2 pt-2">
-        <button
-          type="button"
-          onClick={() => send({ type: 'CANCEL' })}
-          className="flex-1 py-2 px-4 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50"
-        >
+      {/* Actions */}
+      <div className="flex gap-3 pt-2">
+        <SecondaryButton onClick={() => send({ type: 'CANCEL' })}>
           Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={context.isSaving}
-          className="flex-1 py-2 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
+        </SecondaryButton>
+        <PrimaryButton
+          onClick={() => {}}
+          disabled={context.isSaving || !name || !monthlyCost}
+          loading={context.isSaving}
         >
           {context.isSaving ? 'Saving...' : 'Save'}
-        </button>
+        </PrimaryButton>
       </div>
     </form>
   );

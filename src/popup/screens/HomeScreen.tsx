@@ -4,6 +4,10 @@
 
 import React from 'react';
 import type { PopupContext, PopupEvent } from '../../state-machine/types';
+import { DomainPill } from '../components/DomainPill';
+import { IconContainer } from '../components/IconContainer';
+import { PrimaryButton } from '../components/PrimaryButton';
+import { TextLink } from '../components/TextLink';
 
 interface Props {
   context: PopupContext;
@@ -11,43 +15,50 @@ interface Props {
 }
 
 export function HomeScreen({ context, send }: Props) {
-  return (
-    <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-        <svg
-          className="w-8 h-8 text-blue-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      </div>
+  // Get domain from context (set by extension when popup opens)
+  const domain = context.currentDomain ?? 'Unknown page';
 
-      <h1 className="text-xl font-semibold text-slate-900 mb-2">SubSense</h1>
-      <p className="text-slate-500 text-sm mb-6">
-        Check the transparency of this page's subscription terms
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[320px] px-6 py-8">
+      {/* Domain indicator */}
+      <DomainPill domain={domain} />
+
+      {/* Spacer */}
+      <div className="flex-1 min-h-8" />
+
+      {/* Icon */}
+      <IconContainer icon="sparkles" color="blue" size="lg" />
+
+      {/* Headline */}
+      <h1 className="text-xl font-semibold text-slate-900 dark:text-white mt-5 mb-2 text-center">
+        Score this page
+      </h1>
+
+      {/* Subtext */}
+      <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-6 max-w-[280px]">
+        See how transparent pricing and terms are
       </p>
 
-      <button
-        onClick={() => send({ type: 'SCORE_PAGE' })}
-        className="w-full bg-blue-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-      >
+      {/* Primary CTA */}
+      <PrimaryButton onClick={() => send({ type: 'SCORE_PAGE' })}>
         Score this page
-      </button>
+      </PrimaryButton>
 
+      {/* Secondary link */}
+      <div className="mt-4">
+        <TextLink onClick={() => send({ type: 'VIEW_HISTORY' })} icon="history">
+          View my scores
+        </TextLink>
+      </div>
+
+      {/* Spacer */}
+      <div className="flex-1 min-h-4" />
+
+      {/* Saved count */}
       {context.scoreReportCount > 0 && (
-        <button
-          onClick={() => send({ type: 'VIEW_HISTORY' })}
-          className="mt-3 text-sm text-blue-600 hover:text-blue-700"
-        >
-          View saved scores ({context.scoreReportCount})
-        </button>
+        <p className="text-xs text-slate-400 dark:text-slate-500">
+          {context.scoreReportCount} saved score{context.scoreReportCount !== 1 ? 's' : ''}
+        </p>
       )}
     </div>
   );
