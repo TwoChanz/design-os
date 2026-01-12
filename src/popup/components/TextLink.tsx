@@ -4,7 +4,7 @@
 
 import React from 'react';
 
-type IconType = 'arrow-left' | 'external-link' | 'history';
+type IconType = 'arrow-left' | 'external-link' | 'history' | 'plus';
 
 interface TextLinkProps {
   children: React.ReactNode;
@@ -47,10 +47,19 @@ function HistoryIcon({ className }: { className: string }) {
   );
 }
 
+function PlusIcon({ className }: { className: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+    </svg>
+  );
+}
+
 const icons: Record<IconType, React.ComponentType<{ className: string }>> = {
   'arrow-left': ArrowLeftIcon,
   'external-link': ExternalLinkIcon,
   history: HistoryIcon,
+  plus: PlusIcon,
 };
 
 export function TextLink({ children, onClick, icon, disabled = false }: TextLinkProps) {
