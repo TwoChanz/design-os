@@ -4,8 +4,13 @@
 
 import React from 'react';
 import type { PopupContext, PopupEvent } from '../../state-machine/types';
+import { DomainPill } from '../components/DomainPill';
 import { ScoreBadge } from '../components/ScoreBadge';
-import { CategoryScoreRow } from '../components/CategoryScoreRow';
+import { CategoryBar } from '../components/CategoryBar';
+import { EvidenceList } from '../components/EvidenceList';
+import { LowConfidenceBanner } from '../components/LowConfidenceBanner';
+import { ActionButton } from '../components/ActionButton';
+import { TextLink } from '../components/TextLink';
 
 interface Props {
   context: PopupContext;
@@ -17,78 +22,82 @@ export function ResultScreen({ context, send, canGoBack }: Props) {
   const report = context.currentScoreReport;
 
   if (!report) {
-    return <div className="p-4 text-slate-500">No score data</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[320px] p-6">
+        <p className="text-slate-500 dark:text-slate-400">No score data</p>
+      </div>
+    );
   }
 
+  const isLowConfidence = report.confidence === 'low';
+
   return (
-    <div className="p-4 space-y-4">
-      {/* Header with back button */}
-      {canGoBack() && (
-        <button
-          onClick={() => send({ type: 'BACK' })}
-          disabled={context.isSaving}
-          className="text-sm text-slate-500 hover:text-slate-700 disabled:opacity-50"
-        >
-          ← Back
-        </button>
+    <div className="px-4 py-4 space-y-4">
+      {/* Domain pill with external link */}
+      <div className="flex justify-center">
+        <DomainPill domain={report.domain} url={report.url} showExternalLink />
+      </div>
+
+      {/* Score Badge - centered */}
+      <div className="flex justify-center py-2">
+        <ScoreBadge score={report.overallScore} label={report.ratingLabel} size="lg" />
+      </div>
+
+      {/* Low confidence banner */}
+      {isLowConfidence && (
+        <LowConfidenceBanner onAnswerQuestions={() => send({ type: 'ANSWER_QUESTIONS' })} />
       )}
 
-      {/* Score Badge */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-sm text-slate-500">{report.domain}</div>
-          <ScoreBadge score={report.overallScore} label={report.ratingLabel} size="lg" />
+      {/* Category breakdown card */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+        <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
+          Category Breakdown
+        </h3>
+        <div className="space-y-3">
+          {report.categoryScores.map((category) => (
+            <CategoryBar key={category.category} category={category} />
+          ))}
         </div>
       </div>
 
-      {/* Low confidence notice */}
-      {report.confidence === 'low' && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-          <p className="text-sm text-amber-800">
-            Low confidence score. Help improve it by answering a few questions.
-          </p>
-          <button
-            onClick={() => send({ type: 'ANSWER_QUESTIONS' })}
-            className="mt-2 text-sm font-medium text-amber-700 hover:text-amber-800"
-          >
-            Answer questions →
-          </button>
-        </div>
-      )}
-
-      {/* Category Scores */}
-      <div className="space-y-2">
-        <h3 className="text-sm font-medium text-slate-700">Category Breakdown</h3>
-        {report.categoryScores.map((cat) => (
-          <CategoryScoreRow key={cat.category} {...cat} />
-        ))}
+      {/* Evidence card */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+        <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3">
+          Evidence Found
+        </h3>
+        <EvidenceList items={report.evidenceItems} />
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-2 pt-2">
-        <button
+      {/* Action buttons */}
+      <div className="flex gap-3">
+        <ActionButton
           onClick={() => send({ type: 'SAVE' })}
           disabled={context.isSaving}
-          className="flex-1 bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          loading={context.isSaving}
+          variant={context.isSaving ? 'default' : 'default'}
         >
           {context.isSaving ? 'Saving...' : 'Save'}
-        </button>
-        <button
+        </ActionButton>
+
+        <ActionButton
           onClick={() => send({ type: 'SHARE' })}
           disabled={context.isSharing}
-          className="flex-1 border border-slate-300 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-50 disabled:opacity-50 transition-colors"
+          loading={context.isSharing}
         >
-          {context.isSharing ? 'Sharing...' : 'Share'}
-        </button>
+          {context.isSharing ? 'Generating...' : 'Share'}
+        </ActionButton>
+
+        <ActionButton onClick={() => send({ type: 'ADD_SUBSCRIPTION' })}>
+          Track
+        </ActionButton>
       </div>
 
-      {/* Add to subscriptions */}
-      <button
-        onClick={() => send({ type: 'ADD_SUBSCRIPTION' })}
-        className="w-full text-sm text-blue-600 hover:text-blue-700"
-      >
-        + Track this subscription
-      </button>
+      {/* View history link */}
+      <div className="flex justify-center pt-2">
+        <TextLink onClick={() => send({ type: 'VIEW_HISTORY' })} icon="history">
+          View my scores
+        </TextLink>
+      </div>
     </div>
   );
 }
