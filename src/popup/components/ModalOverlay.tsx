@@ -24,10 +24,13 @@ export function ModalOverlay({ children, onClose }: ModalOverlayProps) {
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/50 dark:bg-black/70"
+        onClick={onClose}
+      />
 
       {/* Modal Content */}
-      <div className="relative bg-white rounded-lg shadow-xl mx-4 max-w-sm w-full max-h-[80%] overflow-auto animate-in zoom-in-95 duration-200">
+      <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl mx-4 max-w-sm w-full max-h-[80%] overflow-auto animate-in zoom-in-95 duration-200">
         {children}
       </div>
     </div>

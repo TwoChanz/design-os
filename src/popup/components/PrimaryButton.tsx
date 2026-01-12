@@ -10,7 +10,13 @@ interface PrimaryButtonProps {
   disabled?: boolean;
   loading?: boolean;
   loadingText?: string;
+  variant?: 'default' | 'danger';
 }
+
+const variantClasses = {
+  default: 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white',
+  danger: 'bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white',
+};
 
 export function PrimaryButton({
   children,
@@ -18,6 +24,7 @@ export function PrimaryButton({
   disabled = false,
   loading = false,
   loadingText,
+  variant = 'default',
 }: PrimaryButtonProps) {
   const isDisabled = disabled || loading;
 
@@ -30,7 +37,7 @@ export function PrimaryButton({
         font-medium text-base transition-colors
         ${isDisabled
           ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed'
-          : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white'
+          : variantClasses[variant]
         }
       `}
     >
