@@ -10,6 +10,7 @@ interface TextLinkProps {
   children: React.ReactNode;
   onClick: () => void;
   icon?: IconType;
+  disabled?: boolean;
 }
 
 function ArrowLeftIcon({ className }: { className: string }) {
@@ -52,13 +53,20 @@ const icons: Record<IconType, React.ComponentType<{ className: string }>> = {
   history: HistoryIcon,
 };
 
-export function TextLink({ children, onClick, icon }: TextLinkProps) {
+export function TextLink({ children, onClick, icon, disabled = false }: TextLinkProps) {
   const IconComponent = icon ? icons[icon] : null;
 
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+      disabled={disabled}
+      className={`
+        inline-flex items-center gap-1.5 text-sm transition-colors
+        ${disabled
+          ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
+          : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+        }
+      `}
     >
       {IconComponent && <IconComponent className="w-4 h-4" />}
       {children}
