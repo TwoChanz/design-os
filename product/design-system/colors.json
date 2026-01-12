@@ -1,0 +1,10 @@
+{
+  "primary": "blue",
+  "secondary": "slate",
+  "neutral": "slate",
+  "status": {
+    "clear": "emerald",
+    "mixed": "amber",
+    "risky": "rose"
+  }
+}

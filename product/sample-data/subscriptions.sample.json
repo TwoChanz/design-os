@@ -1,0 +1,35 @@
+[
+  {
+    "id": "sub_01HQXK9P4Q5R6S7T8U9V0W1X",
+    "name": "Streamify Pro",
+    "domain": "streamify.io",
+    "monthlyCost": 14.99,
+    "status": "active",
+    "renewalDate": "2026-02-11",
+    "notes": "Annual plan, billed monthly",
+    "createdAt": "2026-01-11T09:20:00Z",
+    "updatedAt": "2026-01-11T09:20:00Z"
+  },
+  {
+    "id": "sub_02HQXK8O3P4Q5R6S7T8U9V0W",
+    "name": "Cloud Storage Plus",
+    "domain": "cloudstorage.example",
+    "monthlyCost": 9.99,
+    "status": "active",
+    "renewalDate": "2026-01-28",
+    "notes": null,
+    "createdAt": "2025-12-28T15:30:00Z",
+    "updatedAt": "2025-12-28T15:30:00Z"
+  },
+  {
+    "id": "sub_03HQXK7N2O3P4Q5R6S7T8U9V",
+    "name": "Design Tool Pro",
+    "domain": "designtool.app",
+    "monthlyCost": 24.00,
+    "status": "canceled",
+    "renewalDate": null,
+    "notes": "Canceled — switched to free tier",
+    "createdAt": "2025-11-15T10:00:00Z",
+    "updatedAt": "2026-01-05T08:45:00Z"
+  }
+]

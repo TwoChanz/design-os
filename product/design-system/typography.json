@@ -1,0 +1,6 @@
+{
+  "heading": "system-ui",
+  "body": "system-ui",
+  "mono": "ui-monospace",
+  "notes": "System font stack for native feel and fast load. Optimized for 12-16px sizing in compact extension popup."
+}

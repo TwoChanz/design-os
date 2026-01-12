@@ -1,0 +1,582 @@
+{
+  "id": "subsense-popup",
+  "version": "1.1.0",
+  "initial": "Home",
+  "context": {
+    "activeTab": "scores",
+    "currentScoreReport": null,
+    "evidenceResponses": null,
+    "selectedReportId": null,
+    "selectedSubscriptionId": null,
+    "modalType": null,
+    "modalParentState": null,
+    "isSubmitting": false,
+    "isSharing": false,
+    "isSaving": false,
+    "isManualScore": false,
+    "permissionStatus": null,
+    "pageAccessible": null,
+    "scoreReportCount": 0,
+    "subscriptionCount": 0,
+    "error": null
+  },
+  "states": {
+    "Home": {
+      "id": "Home",
+      "tab": "scores",
+      "description": "Initial state with Score this page CTA",
+      "on": {
+        "SCORE_PAGE": {
+          "target": "Loading",
+          "sideEffects": ["startScoring"]
+        },
+        "TAB_SUBSCRIPTIONS": {
+          "target": "Subscriptions"
+        },
+        "TAB_PRIVACY": {
+          "target": "Privacy"
+        },
+        "VIEW_HISTORY": {
+          "target": "MyScores",
+          "guard": "hasScoreReports"
+        }
+      }
+    },
+    "Loading": {
+      "id": "Loading",
+      "tab": "scores",
+      "description": "Scoring in progress",
+      "async": true,
+      "on": {
+        "SCORE_SUCCESS": {
+          "target": "Result",
+          "actions": ["setScoreReport"]
+        },
+        "SCORE_LOW_CONFIDENCE": {
+          "target": "Result",
+          "actions": ["setScoreReport", "setLowConfidenceFlag"]
+        },
+        "SCORE_ERROR_CSP": {
+          "target": "ErrorCSP",
+          "guard": "notPageReadable",
+          "actions": ["setError"]
+        },
+        "SCORE_ERROR_PERMISSION": {
+          "target": "ErrorPermission",
+          "guard": "notPermissionGranted",
+          "actions": ["setError"]
+        }
+      },
+      "backDisabled": true
+    },
+    "Result": {
+      "id": "Result",
+      "tab": "scores",
+      "description": "Score result displayed",
+      "on": {
+        "BACK": {
+          "target": "Home",
+          "actions": ["clearScoreReport"]
+        },
+        "ANSWER_QUESTIONS": {
+          "target": "EvidencePrompt",
+          "guard": "hasLowConfidence"
+        },
+        "SAVE": {
+          "target": "MyScores",
+          "actions": ["setSaving"],
+          "sideEffects": ["saveScore"],
+          "note": "Phase 1: Save auto-navigates to My Scores"
+        },
+        "SAVE_SUCCESS": {
+          "actions": ["clearSaving", "incrementScoreReportCount"],
+          "sideEffects": ["showToast:Saved to My Scores"]
+        },
+        "SAVE_FAILURE": {
+          "actions": ["clearSaving"],
+          "sideEffects": ["showToast:Couldn't save. Storage full."]
+        },
+        "SHARE": {
+          "actions": ["setSharing"],
+          "sideEffects": ["generateShareImage"]
+        },
+        "SHARE_SUCCESS": {
+          "actions": ["clearSharing"],
+          "sideEffects": ["showToast:Score card generated"]
+        },
+        "SHARE_FAILURE": {
+          "actions": ["clearSharing"],
+          "sideEffects": ["copyTextSummary", "showToast:Copied summary to clipboard"]
+        },
+        "ADD_SUBSCRIPTION": {
+          "target": "ModalOpen",
+          "actions": ["setModalType:subscriptionForm", "setModalParentState:Result", "prefillSubscriptionDomain"]
+        },
+        "TAB_SUBSCRIPTIONS": {
+          "target": "Subscriptions"
+        },
+        "TAB_PRIVACY": {
+          "target": "Privacy"
+        }
+      }
+    },
+    "EvidencePrompt": {
+      "id": "EvidencePrompt",
+      "tab": "scores",
+      "description": "3-question form for manual input",
+      "on": {
+        "BACK": {
+          "target": "Result",
+          "guard": "notSubmitting",
+          "actions": ["clearEvidenceResponses"]
+        },
+        "SET_ANSWER": {
+          "actions": ["updateEvidenceResponse"]
+        },
+        "SUBMIT": {
+          "guard": "allQuestionsAnswered",
+          "actions": ["setSubmitting"],
+          "sideEffects": ["recalcScore"]
+        },
+        "RECALC_SUCCESS": {
+          "target": "Result",
+          "actions": ["clearSubmitting", "updateScoreReport", "clearEvidenceResponses"],
+          "sideEffects": ["showToast:Updated score with your answers"]
+        },
+        "RECALC_FAILURE": {
+          "actions": ["clearSubmitting", "setError"],
+          "sideEffects": ["showToast:Couldn't update score. Try again."]
+        }
+      }
+    },
+    "ErrorCSP": {
+      "id": "ErrorCSP",
+      "tab": "scores",
+      "description": "Page blocked by CSP or restrictions",
+      "on": {
+        "BACK": {
+          "target": "Home"
+        },
+        "ANSWER_MANUAL": {
+          "target": "EvidencePrompt",
+          "actions": ["setManualScoreFlag"]
+        },
+        "TAB_SUBSCRIPTIONS": {
+          "target": "Subscriptions"
+        },
+        "TAB_PRIVACY": {
+          "target": "Privacy"
+        }
+      }
+    },
+    "ErrorPermission": {
+      "id": "ErrorPermission",
+      "tab": "scores",
+      "description": "Extension lacks host permission",
+      "on": {
+        "BACK": {
+          "target": "Home"
+        },
+        "GRANT_PERMISSION": {
+          "sideEffects": ["requestPermission"]
+        },
+        "PERMISSION_GRANTED": {
+          "target": "Loading",
+          "guard": "permissionGranted",
+          "sideEffects": ["startScoring"]
+        },
+        "PERMISSION_DENIED": {
+          "sideEffects": ["showToast:Permission required to analyze this page"]
+        },
+        "TAB_SUBSCRIPTIONS": {
+          "target": "Subscriptions"
+        },
+        "TAB_PRIVACY": {
+          "target": "Privacy"
+        }
+      }
+    },
+    "MyScores": {
+      "id": "MyScores",
+      "tab": "scores",
+      "description": "List of saved score reports",
+      "persisted": true,
+      "on": {
+        "SELECT_REPORT": {
+          "target": "ScoreDetail",
+          "actions": ["setSelectedReportId"]
+        },
+        "SCORE_PAGE": {
+          "target": "Loading",
+          "sideEffects": ["startScoring"]
+        },
+        "TAB_SUBSCRIPTIONS": {
+          "target": "Subscriptions"
+        },
+        "TAB_PRIVACY": {
+          "target": "Privacy"
+        }
+      },
+      "emptyState": {
+        "guard": "noScoreReports",
+        "message": "No saved scores yet",
+        "cta": "Score this page",
+        "ctaAction": "SCORE_PAGE"
+      }
+    },
+    "ScoreDetail": {
+      "id": "ScoreDetail",
+      "tab": "scores",
+      "description": "Single score report detail view",
+      "on": {
+        "BACK": {
+          "target": "MyScores",
+          "actions": ["clearSelectedReportId"]
+        },
+        "SHARE": {
+          "actions": ["setSharing"],
+          "sideEffects": ["generateShareImage"]
+        },
+        "SHARE_SUCCESS": {
+          "actions": ["clearSharing"],
+          "sideEffects": ["showToast:Score card generated"]
+        },
+        "SHARE_FAILURE": {
+          "actions": ["clearSharing"],
+          "sideEffects": ["copyTextSummary", "showToast:Copied summary to clipboard"]
+        },
+        "DELETE": {
+          "target": "ModalOpen",
+          "actions": ["setModalType:confirmDelete", "setModalParentState:ScoreDetail"]
+        },
+        "TAB_SUBSCRIPTIONS": {
+          "target": "Subscriptions"
+        },
+        "TAB_PRIVACY": {
+          "target": "Privacy"
+        }
+      }
+    },
+    "Subscriptions": {
+      "id": "Subscriptions",
+      "tab": "subscriptions",
+      "description": "Subscription list with monthly total",
+      "persisted": true,
+      "on": {
+        "ADD_SUBSCRIPTION": {
+          "target": "ModalOpen",
+          "actions": ["setModalType:subscriptionForm", "setModalParentState:Subscriptions"]
+        },
+        "EDIT_SUBSCRIPTION": {
+          "target": "ModalOpen",
+          "actions": ["setModalType:subscriptionForm", "setModalParentState:Subscriptions", "setSelectedSubscriptionId"]
+        },
+        "DELETE_SUBSCRIPTION": {
+          "target": "ModalOpen",
+          "actions": ["setModalType:confirmDelete", "setModalParentState:Subscriptions", "setSelectedSubscriptionId"]
+        },
+        "TAB_SCORES": [
+          {
+            "target": "MyScores",
+            "guard": "hasScoreReports"
+          },
+          {
+            "target": "Home",
+            "guard": "noScoreReports"
+          }
+        ],
+        "TAB_PRIVACY": {
+          "target": "Privacy"
+        }
+      },
+      "emptyState": {
+        "guard": "noSubscriptions",
+        "message": "No subscriptions added yet",
+        "cta": "Add subscription",
+        "ctaAction": "ADD_SUBSCRIPTION"
+      }
+    },
+    "Privacy": {
+      "id": "Privacy",
+      "tab": "privacy",
+      "description": "Privacy promise static view",
+      "on": {
+        "CLEAR_ALL_DATA": {
+          "target": "ModalOpen",
+          "actions": ["setModalType:confirmClearAll", "setModalParentState:Privacy"]
+        },
+        "TAB_SCORES": [
+          {
+            "target": "MyScores",
+            "guard": "hasScoreReports"
+          },
+          {
+            "target": "Home",
+            "guard": "noScoreReports"
+          }
+        ],
+        "TAB_SUBSCRIPTIONS": {
+          "target": "Subscriptions"
+        }
+      }
+    },
+    "ModalOpen": {
+      "id": "ModalOpen",
+      "tab": "inherit",
+      "description": "Overlay state for modals",
+      "overlay": true,
+      "on": {
+        "MODAL_CLOSE": {
+          "target": "modalParentState",
+          "actions": ["clearModalState"]
+        },
+        "SAVE_SUBSCRIPTION": {
+          "actions": ["setSaving"],
+          "sideEffects": ["saveSubscription"]
+        },
+        "SAVE_SUBSCRIPTION_SUCCESS": {
+          "target": "Subscriptions",
+          "actions": ["clearSaving", "clearModalState", "incrementSubscriptionCount"],
+          "sideEffects": ["showToast:Subscription saved"]
+        },
+        "SAVE_SUBSCRIPTION_FAILURE": {
+          "actions": ["clearSaving"],
+          "sideEffects": ["showToast:Couldn't save subscription"]
+        },
+        "DELETE_CONFIRMED": [
+          {
+            "guard": "isScoreDelete",
+            "sideEffects": ["deleteScore"]
+          },
+          {
+            "guard": "isSubscriptionDelete",
+            "sideEffects": ["deleteSubscription"]
+          },
+          {
+            "guard": "isClearAllData",
+            "sideEffects": ["clearAllData"]
+          }
+        ],
+        "DELETE_SCORE_SUCCESS": {
+          "target": "MyScores",
+          "actions": ["clearModalState", "clearSelectedReportId", "decrementScoreReportCount"],
+          "sideEffects": ["showToast:Deleted score"]
+        },
+        "DELETE_SUBSCRIPTION_SUCCESS": {
+          "target": "Subscriptions",
+          "actions": ["clearModalState", "clearSelectedSubscriptionId", "decrementSubscriptionCount"],
+          "sideEffects": ["showToast:Subscription deleted"]
+        },
+        "CLEAR_ALL_SUCCESS": {
+          "target": "Home",
+          "actions": ["clearModalState", "resetContext"],
+          "sideEffects": ["showToast:All data cleared"]
+        },
+        "CANCEL": {
+          "target": "modalParentState",
+          "actions": ["clearModalState"]
+        }
+      }
+    }
+  },
+  "guards": {
+    "permissionGranted": {
+      "description": "Extension has activeTab/host permission for current page",
+      "check": "context.permissionStatus === 'granted'"
+    },
+    "notPermissionGranted": {
+      "description": "Extension lacks permission for current page",
+      "check": "context.permissionStatus !== 'granted'"
+    },
+    "pageReadable": {
+      "description": "Content script can access page DOM (no CSP block)",
+      "check": "context.pageAccessible === true"
+    },
+    "notPageReadable": {
+      "description": "Content script cannot access page DOM",
+      "check": "context.pageAccessible === false"
+    },
+    "hasLowConfidence": {
+      "description": "Current ScoreReport has confidence: low",
+      "check": "context.currentScoreReport?.confidence === 'low'"
+    },
+    "allQuestionsAnswered": {
+      "description": "All 3 EvidencePrompt questions have answers",
+      "check": "context.evidenceResponses?.length === 3 && context.evidenceResponses.every(r => r.answer !== null)"
+    },
+    "notSubmitting": {
+      "description": "Not currently in async submit operation",
+      "check": "context.isSubmitting === false"
+    },
+    "isManualScore": {
+      "description": "Scoring initiated from ErrorCSP → EvidencePrompt path",
+      "check": "context.isManualScore === true"
+    },
+    "hasScoreReports": {
+      "description": "User has saved score reports",
+      "check": "context.scoreReportCount > 0"
+    },
+    "noScoreReports": {
+      "description": "User has no saved score reports",
+      "check": "context.scoreReportCount === 0"
+    },
+    "hasSubscriptions": {
+      "description": "User has saved subscriptions",
+      "check": "context.subscriptionCount > 0"
+    },
+    "noSubscriptions": {
+      "description": "User has no saved subscriptions",
+      "check": "context.subscriptionCount === 0"
+    },
+    "isScoreDelete": {
+      "description": "Modal is for deleting a ScoreReport",
+      "check": "context.modalType === 'confirmDelete' && context.selectedReportId !== null"
+    },
+    "isSubscriptionDelete": {
+      "description": "Modal is for deleting a Subscription",
+      "check": "context.modalType === 'confirmDelete' && context.selectedSubscriptionId !== null"
+    },
+    "isClearAllData": {
+      "description": "Modal is for clearing all data",
+      "check": "context.modalType === 'confirmClearAll'"
+    }
+  },
+  "sideEffects": {
+    "startScoring": {
+      "description": "Initiates content script page analysis",
+      "async": true,
+      "dispatches": ["SCORE_SUCCESS", "SCORE_LOW_CONFIDENCE", "SCORE_ERROR_CSP", "SCORE_ERROR_PERMISSION"]
+    },
+    "saveScore": {
+      "description": "Writes ScoreReport to local storage",
+      "async": true,
+      "dispatches": ["SAVE_SUCCESS", "SAVE_FAILURE"]
+    },
+    "recalcScore": {
+      "description": "Recalculates score with user input, updates ScoreReport",
+      "async": true,
+      "dispatches": ["RECALC_SUCCESS", "RECALC_FAILURE"]
+    },
+    "generateShareImage": {
+      "description": "Renders score card to canvas, triggers download",
+      "async": true,
+      "dispatches": ["SHARE_SUCCESS", "SHARE_FAILURE"]
+    },
+    "copyTextSummary": {
+      "description": "Copies text summary to clipboard",
+      "async": true
+    },
+    "deleteScore": {
+      "description": "Removes ScoreReport from local storage",
+      "async": true,
+      "dispatches": ["DELETE_SCORE_SUCCESS", "DELETE_SCORE_FAILURE"]
+    },
+    "saveSubscription": {
+      "description": "Writes or updates Subscription to local storage",
+      "async": true,
+      "dispatches": ["SAVE_SUBSCRIPTION_SUCCESS", "SAVE_SUBSCRIPTION_FAILURE"]
+    },
+    "deleteSubscription": {
+      "description": "Removes Subscription from local storage",
+      "async": true,
+      "dispatches": ["DELETE_SUBSCRIPTION_SUCCESS", "DELETE_SUBSCRIPTION_FAILURE"]
+    },
+    "requestPermission": {
+      "description": "Opens Chrome permission prompt",
+      "async": true,
+      "dispatches": ["PERMISSION_GRANTED", "PERMISSION_DENIED"]
+    },
+    "clearAllData": {
+      "description": "Clears all local storage data",
+      "async": true,
+      "dispatches": ["CLEAR_ALL_SUCCESS", "CLEAR_ALL_FAILURE"]
+    },
+    "showToast": {
+      "description": "Displays toast notification",
+      "async": false,
+      "params": ["message"]
+    }
+  },
+  "actions": {
+    "setScoreReport": "context.currentScoreReport = payload",
+    "updateScoreReport": "context.currentScoreReport = { ...context.currentScoreReport, ...payload }",
+    "clearScoreReport": "context.currentScoreReport = null",
+    "setLowConfidenceFlag": "context.currentScoreReport.confidence = 'low'",
+    "setManualScoreFlag": "context.isManualScore = true",
+    "updateEvidenceResponse": "context.evidenceResponses = updateResponse(context.evidenceResponses, payload)",
+    "clearEvidenceResponses": "context.evidenceResponses = null",
+    "setSelectedReportId": "context.selectedReportId = payload",
+    "clearSelectedReportId": "context.selectedReportId = null",
+    "setSelectedSubscriptionId": "context.selectedSubscriptionId = payload",
+    "clearSelectedSubscriptionId": "context.selectedSubscriptionId = null",
+    "setModalType": "context.modalType = payload",
+    "setModalParentState": "context.modalParentState = payload",
+    "clearModalState": "context.modalType = null; context.modalParentState = null",
+    "prefillSubscriptionDomain": "context.prefillDomain = context.currentScoreReport?.domain",
+    "setSubmitting": "context.isSubmitting = true",
+    "clearSubmitting": "context.isSubmitting = false",
+    "setSharing": "context.isSharing = true",
+    "clearSharing": "context.isSharing = false",
+    "setSaving": "context.isSaving = true",
+    "clearSaving": "context.isSaving = false",
+    "setError": "context.error = payload",
+    "incrementScoreReportCount": "context.scoreReportCount += 1",
+    "decrementScoreReportCount": "context.scoreReportCount = Math.max(0, context.scoreReportCount - 1)",
+    "incrementSubscriptionCount": "context.subscriptionCount += 1",
+    "decrementSubscriptionCount": "context.subscriptionCount = Math.max(0, context.subscriptionCount - 1)",
+    "resetContext": "context = initialContext"
+  },
+  "popupLifecycle": {
+    "onClose": {
+      "description": "Reset rules when popup closes",
+      "rules": [
+        {
+          "fromStates": ["Loading", "Result", "EvidencePrompt", "ErrorCSP", "ErrorPermission"],
+          "resetTo": "Home",
+          "actions": ["clearScoreReport", "clearEvidenceResponses"]
+        },
+        {
+          "fromStates": ["MyScores", "ScoreDetail"],
+          "resetTo": "MyScores"
+        },
+        {
+          "fromStates": ["Subscriptions"],
+          "resetTo": "Subscriptions"
+        },
+        {
+          "fromStates": ["Privacy"],
+          "resetTo": "Home"
+        },
+        {
+          "fromStates": ["ModalOpen"],
+          "resetTo": "modalParentState",
+          "actions": ["clearModalState"]
+        }
+      ]
+    },
+    "onOpen": {
+      "description": "Initial state determination on popup open",
+      "actions": ["loadCounts"],
+      "rules": [
+        {
+          "guard": "lastTab === 'subscriptions'",
+          "target": "Subscriptions"
+        },
+        {
+          "guard": "hasScoreReports && lastState === 'MyScores'",
+          "target": "MyScores"
+        },
+        {
+          "target": "Home"
+        }
+      ]
+    },
+    "loadCounts": {
+      "description": "Initialize context counts from storage on popup open",
+      "actions": [
+        "context.scoreReportCount = storage.getScoreReportCount()",
+        "context.subscriptionCount = storage.getSubscriptionCount()"
+      ]
+    }
+  }
+}
