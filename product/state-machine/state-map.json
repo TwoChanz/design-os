@@ -1,7 +1,12 @@
 {
   "id": "subsense-popup",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "initial": "Home",
+  "meta": {
+    "dynamicTargets": {
+      "__DYNAMIC_PARENT__": "Resolved at runtime from context.modalParentState. Implementation must read context.modalParentState and transition to that state ID."
+    }
+  },
   "context": {
     "activeTab": "scores",
     "currentScoreReport": null,
@@ -76,6 +81,7 @@
       "on": {
         "BACK": {
           "target": "Home",
+          "guard": "notSaving",
           "actions": ["clearScoreReport"]
         },
         "ANSWER_QUESTIONS": {
@@ -83,18 +89,21 @@
           "guard": "hasLowConfidence"
         },
         "SAVE": {
-          "target": "MyScores",
           "actions": ["setSaving"],
-          "sideEffects": ["saveScore"],
-          "note": "Phase 1: Save auto-navigates to My Scores"
+          "sideEffects": ["saveScore"]
         },
         "SAVE_SUCCESS": {
+          "target": "MyScores",
           "actions": ["clearSaving", "incrementScoreReportCount"],
-          "sideEffects": ["showToast:Saved to My Scores"]
+          "sideEffects": [
+            { "type": "showToast", "message": "Saved to My Scores" }
+          ]
         },
         "SAVE_FAILURE": {
           "actions": ["clearSaving"],
-          "sideEffects": ["showToast:Couldn't save. Storage full."]
+          "sideEffects": [
+            { "type": "showToast", "message": "Couldn't save. Storage full." }
+          ]
         },
         "SHARE": {
           "actions": ["setSharing"],
@@ -102,15 +111,24 @@
         },
         "SHARE_SUCCESS": {
           "actions": ["clearSharing"],
-          "sideEffects": ["showToast:Score card generated"]
+          "sideEffects": [
+            { "type": "showToast", "message": "Score card generated" }
+          ]
         },
         "SHARE_FAILURE": {
           "actions": ["clearSharing"],
-          "sideEffects": ["copyTextSummary", "showToast:Copied summary to clipboard"]
+          "sideEffects": [
+            "copyTextSummary",
+            { "type": "showToast", "message": "Copied summary to clipboard" }
+          ]
         },
         "ADD_SUBSCRIPTION": {
           "target": "ModalOpen",
-          "actions": ["setModalType:subscriptionForm", "setModalParentState:Result", "prefillSubscriptionDomain"]
+          "actions": [
+            { "type": "setModalType", "value": "subscriptionForm" },
+            { "type": "setModalParentState", "value": "Result" },
+            "prefillSubscriptionDomain"
+          ]
         },
         "TAB_SUBSCRIPTIONS": {
           "target": "Subscriptions"
@@ -141,11 +159,15 @@
         "RECALC_SUCCESS": {
           "target": "Result",
           "actions": ["clearSubmitting", "updateScoreReport", "clearEvidenceResponses"],
-          "sideEffects": ["showToast:Updated score with your answers"]
+          "sideEffects": [
+            { "type": "showToast", "message": "Updated score with your answers" }
+          ]
         },
         "RECALC_FAILURE": {
           "actions": ["clearSubmitting", "setError"],
-          "sideEffects": ["showToast:Couldn't update score. Try again."]
+          "sideEffects": [
+            { "type": "showToast", "message": "Couldn't update score. Try again." }
+          ]
         }
       }
     },
@@ -186,7 +208,9 @@
           "sideEffects": ["startScoring"]
         },
         "PERMISSION_DENIED": {
-          "sideEffects": ["showToast:Permission required to analyze this page"]
+          "sideEffects": [
+            { "type": "showToast", "message": "Permission required to analyze this page" }
+          ]
         },
         "TAB_SUBSCRIPTIONS": {
           "target": "Subscriptions"
@@ -239,15 +263,23 @@
         },
         "SHARE_SUCCESS": {
           "actions": ["clearSharing"],
-          "sideEffects": ["showToast:Score card generated"]
+          "sideEffects": [
+            { "type": "showToast", "message": "Score card generated" }
+          ]
         },
         "SHARE_FAILURE": {
           "actions": ["clearSharing"],
-          "sideEffects": ["copyTextSummary", "showToast:Copied summary to clipboard"]
+          "sideEffects": [
+            "copyTextSummary",
+            { "type": "showToast", "message": "Copied summary to clipboard" }
+          ]
         },
         "DELETE": {
           "target": "ModalOpen",
-          "actions": ["setModalType:confirmDelete", "setModalParentState:ScoreDetail"]
+          "actions": [
+            { "type": "setModalType", "value": "confirmDelete" },
+            { "type": "setModalParentState", "value": "ScoreDetail" }
+          ]
         },
         "TAB_SUBSCRIPTIONS": {
           "target": "Subscriptions"
@@ -265,15 +297,26 @@
       "on": {
         "ADD_SUBSCRIPTION": {
           "target": "ModalOpen",
-          "actions": ["setModalType:subscriptionForm", "setModalParentState:Subscriptions"]
+          "actions": [
+            { "type": "setModalType", "value": "subscriptionForm" },
+            { "type": "setModalParentState", "value": "Subscriptions" }
+          ]
         },
         "EDIT_SUBSCRIPTION": {
           "target": "ModalOpen",
-          "actions": ["setModalType:subscriptionForm", "setModalParentState:Subscriptions", "setSelectedSubscriptionId"]
+          "actions": [
+            { "type": "setModalType", "value": "subscriptionForm" },
+            { "type": "setModalParentState", "value": "Subscriptions" },
+            "setSelectedSubscriptionId"
+          ]
         },
         "DELETE_SUBSCRIPTION": {
           "target": "ModalOpen",
-          "actions": ["setModalType:confirmDelete", "setModalParentState:Subscriptions", "setSelectedSubscriptionId"]
+          "actions": [
+            { "type": "setModalType", "value": "confirmDelete" },
+            { "type": "setModalParentState", "value": "Subscriptions" },
+            "setSelectedSubscriptionId"
+          ]
         },
         "TAB_SCORES": [
           {
@@ -303,7 +346,10 @@
       "on": {
         "CLEAR_ALL_DATA": {
           "target": "ModalOpen",
-          "actions": ["setModalType:confirmClearAll", "setModalParentState:Privacy"]
+          "actions": [
+            { "type": "setModalType", "value": "confirmClearAll" },
+            { "type": "setModalParentState", "value": "Privacy" }
+          ]
         },
         "TAB_SCORES": [
           {
@@ -327,7 +373,7 @@
       "overlay": true,
       "on": {
         "MODAL_CLOSE": {
-          "target": "modalParentState",
+          "target": "__DYNAMIC_PARENT__",
           "actions": ["clearModalState"]
         },
         "SAVE_SUBSCRIPTION": {
@@ -337,11 +383,15 @@
         "SAVE_SUBSCRIPTION_SUCCESS": {
           "target": "Subscriptions",
           "actions": ["clearSaving", "clearModalState", "incrementSubscriptionCount"],
-          "sideEffects": ["showToast:Subscription saved"]
+          "sideEffects": [
+            { "type": "showToast", "message": "Subscription saved" }
+          ]
         },
         "SAVE_SUBSCRIPTION_FAILURE": {
           "actions": ["clearSaving"],
-          "sideEffects": ["showToast:Couldn't save subscription"]
+          "sideEffects": [
+            { "type": "showToast", "message": "Couldn't save subscription" }
+          ]
         },
         "DELETE_CONFIRMED": [
           {
@@ -360,20 +410,26 @@
         "DELETE_SCORE_SUCCESS": {
           "target": "MyScores",
           "actions": ["clearModalState", "clearSelectedReportId", "decrementScoreReportCount"],
-          "sideEffects": ["showToast:Deleted score"]
+          "sideEffects": [
+            { "type": "showToast", "message": "Deleted score" }
+          ]
         },
         "DELETE_SUBSCRIPTION_SUCCESS": {
           "target": "Subscriptions",
           "actions": ["clearModalState", "clearSelectedSubscriptionId", "decrementSubscriptionCount"],
-          "sideEffects": ["showToast:Subscription deleted"]
+          "sideEffects": [
+            { "type": "showToast", "message": "Subscription deleted" }
+          ]
         },
         "CLEAR_ALL_SUCCESS": {
           "target": "Home",
-          "actions": ["clearModalState", "resetContext"],
-          "sideEffects": ["showToast:All data cleared"]
+          "actions": ["clearModalState", "resetCounts", "resetContext"],
+          "sideEffects": [
+            { "type": "showToast", "message": "All data cleared" }
+          ]
         },
         "CANCEL": {
-          "target": "modalParentState",
+          "target": "__DYNAMIC_PARENT__",
           "actions": ["clearModalState"]
         }
       }
@@ -407,6 +463,10 @@
     "notSubmitting": {
       "description": "Not currently in async submit operation",
       "check": "context.isSubmitting === false"
+    },
+    "notSaving": {
+      "description": "Not currently in async save operation",
+      "check": "context.isSaving === false"
     },
     "isManualScore": {
       "description": "Scoring initiated from ErrorCSP → EvidencePrompt path",
@@ -509,8 +569,8 @@
     "clearSelectedReportId": "context.selectedReportId = null",
     "setSelectedSubscriptionId": "context.selectedSubscriptionId = payload",
     "clearSelectedSubscriptionId": "context.selectedSubscriptionId = null",
-    "setModalType": "context.modalType = payload",
-    "setModalParentState": "context.modalParentState = payload",
+    "setModalType": "context.modalType = payload.value",
+    "setModalParentState": "context.modalParentState = payload.value",
     "clearModalState": "context.modalType = null; context.modalParentState = null",
     "prefillSubscriptionDomain": "context.prefillDomain = context.currentScoreReport?.domain",
     "setSubmitting": "context.isSubmitting = true",
@@ -524,6 +584,7 @@
     "decrementScoreReportCount": "context.scoreReportCount = Math.max(0, context.scoreReportCount - 1)",
     "incrementSubscriptionCount": "context.subscriptionCount += 1",
     "decrementSubscriptionCount": "context.subscriptionCount = Math.max(0, context.subscriptionCount - 1)",
+    "resetCounts": "context.scoreReportCount = 0; context.subscriptionCount = 0",
     "resetContext": "context = initialContext"
   },
   "popupLifecycle": {
@@ -549,7 +610,7 @@
         },
         {
           "fromStates": ["ModalOpen"],
-          "resetTo": "modalParentState",
+          "resetTo": "__DYNAMIC_PARENT__",
           "actions": ["clearModalState"]
         }
       ]
